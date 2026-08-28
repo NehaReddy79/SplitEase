@@ -28,4 +28,17 @@ async function addExpense(req, res) {
     }
 }
 
-module.exports = addExpense
+async function getExpenses(req , res){
+    try{
+        const {groupId} = req.params
+
+        const expenseRes = await Expense.find({group : groupId}).populate("paidBy" , "name email")
+
+        res.status(200).json(expenseRes)
+    }catch(error){
+        console.error(error.message)
+        res.status(500).json({error : "Something went wrong"})
+    }
+}
+
+module.exports = {addExpense , getExpenses }
