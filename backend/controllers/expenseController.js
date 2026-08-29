@@ -8,37 +8,64 @@ async function addExpense(req, res) {
 
             const splitAmt = amount / participants.length
             splits = participants.map((participantId) => {
-                return { user : participantId , amount : splitAmt}
+                return { user: participantId, amount: splitAmt }
             })
 
         }
-        else{
+        else {
             return res.status(400).json({ error: "Only equal split supported for now" })
         }
 
-        const expenseRes = new Expense({group : groupId , paidBy : req.userId , amount , description , splitType , splits})
+        const expenseRes = new Expense({ group: groupId, paidBy: req.userId, amount, description, splitType, splits })
 
         await expenseRes.save()
-        res.status(201).json({message : "Expenses created"})
+        res.status(201).json({ message: "Expenses created" })
 
     }
-    catch(error){
+    catch (error) {
         console.error(error.message)
-        res.status(500).json({error : "Something went wrong"})
+        res.status(500).json({ error: "Something went wrong" })
     }
 }
 
-async function getExpenses(req , res){
-    try{
-        const {groupId} = req.params
+async function getExpenses(req, res) {
+    try {
+        const { groupId } = req.params
 
-        const expenseRes = await Expense.find({group : groupId}).populate("paidBy" , "name email")
+        const expenseRes = await Expense.find({ group: groupId }).populate("paidBy", "name email")
 
         res.status(200).json(expenseRes)
+    } catch (error) {
+        console.error(error.message)
+        res.status(500).json({ error: "Something went wrong" })
+    }
+}
+
+async function getBalances(req, res) {
+    try {
+        const { groupId } = req.params;
+
+        const expenses = await Expense.find({ group: groupId })
+
+        let balances = {}
+
+        for (const expense of expenses) {
+            const paidBy = expense.paidBy.toString()
+            balances[paidBy] = (balances[paidBy] || 0) + expense.amount
+
+            for (const split of expense.splits) {
+                const user = split.user.toString()
+
+                balances[user] = (balances[user] || 0) - split.amount
+            }
+        }
+        res.json(balances)
+
     }catch(error){
         console.error(error.message)
         res.status(500).json({error : "Something went wrong"})
     }
+    
 }
 
-module.exports = {addExpense , getExpenses }
+module.exports = { addExpense, getExpenses, getBalances }
