@@ -1,4 +1,5 @@
 const Expense = require('../models/Expense')
+const Settlement = require('../models/Settlement')
 
 async function addExpense(req, res) {
     try {
@@ -91,6 +92,17 @@ async function getBalances(req, res) {
                 balances[user] = (balances[user] || 0) - split.amount
             }
         }
+        
+
+        const settlements = await Settlement.find({ group : groupId})
+        for(const settlement of settlements){
+            const from  = settlement.from.toString()
+            const to = settlement.to.toString()
+
+            balances[from] = (balances[from] || 0) + settlement.amount
+            balances[to] = (balances[to] || 0) - settlement.amount
+        }
+
         res.json(balances)
 
     }catch(error){
@@ -148,8 +160,19 @@ async function getSettlements(req, res){
                 balances[user] = (balances[user] || 0) - split.amount
             }
         }
-        const settlements = simplifyDebts(balances)
+        
 
+        const settlementsRes = await Settlement.find({ group : groupId})
+        for(const settlement of settlementsRes){
+            const from  = settlement.from.toString()
+            const to = settlement.to.toString()
+
+            balances[from] = (balances[from] || 0) + settlement.amount
+            balances[to] = (balances[to] || 0) - settlement.amount
+        }
+
+        const settlements = simplifyDebts(balances)
+        
         res.json(settlements)
 
     }catch(error){
