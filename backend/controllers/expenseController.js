@@ -12,8 +12,40 @@ async function addExpense(req, res) {
             })
 
         }
+        else if(splitType === "exact"){
+            let sum = 0
+
+            for(const participant of participants){
+                sum += participant.amount
+            }
+
+            if( Math.abs(sum - amount) > 0.01){
+                return res.status(400).json({error : "Invalid amount"})
+            }
+
+            splits = participants.map((p) => {
+                return {user : p.userId , amount : p.amount}
+            })
+
+        }
+        else if(splitType === "percentage"){
+            let sum = 0
+
+            for(const participant of participants){
+                sum += participant.percentage
+            }
+
+            if(Math.abs(sum - 100) > 0.01){
+                return res.status(400).json({error : "The percentages don't add up to 100"})
+            }
+
+            splits = participants.map((p) =>{
+                return {user : p.userId , amount : (p.percentage / 100) * amount}
+            })
+
+        }
         else {
-            return res.status(400).json({ error: "Only equal split supported for now" })
+            return res.status(500).json({ error: "Invalid split type" })
         }
 
         const expenseRes = new Expense({ group: groupId, paidBy: req.userId, amount, description, splitType, splits })
