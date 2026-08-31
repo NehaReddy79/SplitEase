@@ -33,12 +33,46 @@ async function addMember(req, res) {
         await groupRes.save()
 
         res.status(200).json(groupRes)
-    }catch(error){
+    } catch (error) {
         console.error(error.message)
-        res.status(500).json({error : "Something went wrong"})
+        res.status(500).json({ error: "Something went wrong" })
     }
-    
+
 
 }
 
-module.exports = { createGroup, addMember };
+async function getMyGroups(req, res) {
+    try {
+        const userId = req.userId
+
+        const groupRes = await Group.find({ members: req.userId })
+
+        res.status(200).json(groupRes)
+        
+    }catch (error) {
+        console.error(error.message)
+        res.status(500).json({ error: "Something went wrong" })
+    }
+    
+}
+
+async function getGroupMembers(req, res) {
+    try {
+        const { groupId } = req.params
+        const group = await Group.findById(groupId).populate('members', 'name email')
+
+        if (!group) {
+            return res.status(404).json({ error: "Group doesn't exist" })
+        }
+
+        res.status(200).json(group.members)
+
+    } catch (error) {
+
+        console.error(error.message)
+        res.status(500).json({ error: "Something went wrong" })
+    }
+
+}
+
+module.exports = { createGroup, addMember, getMyGroups, getGroupMembers };
