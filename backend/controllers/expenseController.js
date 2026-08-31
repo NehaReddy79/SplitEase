@@ -68,4 +68,62 @@ async function getBalances(req, res) {
     
 }
 
-module.exports = { addExpense, getExpenses, getBalances }
+function simplifyDebts(balances){
+    const creditors = []
+    const debtors = []
+    const settlements = []
+
+    for( const [user , balance] of Object.entries(balances)){
+        if(balance > 0){
+            creditors.push({user , amount : balance})
+        }else if(balance < 0){
+            debtors.push({user , amount : -balance})
+        }
+    }
+
+    creditors.sort((a , b) => b.amount - a.amount)
+    debtors.sort((a,b) => b.amount - a.amount)
+
+    let i = 0 , j = 0
+
+    while(i < creditors.length && j < debtors.length){
+        const settlement = Math.min(creditors[i].amount , debtors[j].amount)
+        settlements.push({from: debtors[j].user , to: creditors[i].user , amount: settlement});
+        creditors[i].amount -= settlement
+        debtors[j].amount -= settlement
+        if (creditors[i].amount === 0 ) i++
+        if (debtors[j].amount === 0) j++
+    }
+
+    return settlements
+
+}
+
+async function getSettlements(req, res){
+    try{
+        const { groupId } = req.params
+        const expenses = await Expense.find({ group : groupId});
+
+        let balances = {}
+
+        for (const expense of expenses) {
+            const paidBy = expense.paidBy.toString()
+            balances[paidBy] = (balances[paidBy] || 0) + expense.amount
+
+            for (const split of expense.splits) {
+                const user = split.user.toString()
+
+                balances[user] = (balances[user] || 0) - split.amount
+            }
+        }
+        const settlements = simplifyDebts(balances)
+
+        res.json(settlements)
+
+    }catch(error){
+        console.error(error.message)
+        res.status(500).json({error : "Something went wrong"})
+    }
+}
+
+module.exports = { addExpense, getExpenses, getBalances , getSettlements }
