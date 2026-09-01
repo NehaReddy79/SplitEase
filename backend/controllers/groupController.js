@@ -23,10 +23,14 @@ async function addMember(req, res) {
 
         const groupRes = await Group.findById(groupId)
 
+        if (!userId) {
+            return res.status(400).json({ error: "userId is required" });
+        }
+
         if (!groupRes) {
             return res.status(404).json({ error: "Group doesn't exist" })
         }
-        if (groupRes.members.includes(userId)) {
+        if (groupRes.members.some(m => m.toString() === userId)) {
             return res.status(400).json({ error: "User already exists in the group" })
         }
         groupRes.members.push(userId)
@@ -48,12 +52,12 @@ async function getMyGroups(req, res) {
         const groupRes = await Group.find({ members: req.userId })
 
         res.status(200).json(groupRes)
-        
-    }catch (error) {
+
+    } catch (error) {
         console.error(error.message)
         res.status(500).json({ error: "Something went wrong" })
     }
-    
+
 }
 
 async function getGroupMembers(req, res) {
