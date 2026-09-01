@@ -4,50 +4,14 @@ const Settlement = require('../models/Settlement')
 async function addExpense(req, res) {
     try {
         const { groupId, amount, description, splitType, participants } = req.body
-        let splits = []
-        if (splitType === "equal") {
+        let splits
 
-            const splitAmt = amount / participants.length
-            splits = participants.map((participantId) => {
-                return { user: participantId, amount: splitAmt }
-            })
-
+        try{
+            splits = calculateSplits(splitType , amount , participants)
+        }catch(err){
+            return res.status(400).json({error : err.message})
         }
-        else if (splitType === "exact") {
-            let sum = 0
-
-            for (const participant of participants) {
-                sum += participant.amount
-            }
-
-            if (Math.abs(sum - amount) > 0.01) {
-                return res.status(400).json({ error: "Invalid amount" })
-            }
-
-            splits = participants.map((p) => {
-                return { user: p.userId, amount: p.amount }
-            })
-
-        }
-        else if (splitType === "percentage") {
-            let sum = 0
-
-            for (const participant of participants) {
-                sum += participant.percentage
-            }
-
-            if (Math.abs(sum - 100) > 0.01) {
-                return res.status(400).json({ error: "The percentages don't add up to 100" })
-            }
-
-            splits = participants.map((p) => {
-                return { user: p.userId, amount: (p.percentage / 100) * amount }
-            })
-
-        }
-        else {
-            return res.status(500).json({ error: "Invalid split type" })
-        }
+        
 
         const expenseRes = new Expense({ group: groupId, paidBy: req.userId, amount, description, splitType, splits })
 
@@ -197,11 +161,99 @@ async function deleteExpense(req, res) {
             return res.status(403).json({ error: "Only group creator can delete expenses" })
         }
 
-    }catch(error){
+    } catch (error) {
         console.error(error.message)
-        res.status(500).json({error : "Something went wrong"})
+        res.status(500).json({ error: "Something went wrong" })
     }
-    
+
 }
 
-module.exports = { addExpense, getExpenses, getBalances, getSettlements , deleteExpense }
+function calculateSplits(splitType, amount, participants) {
+    let splits = []
+    if (splitType === "equal") {
+
+        const splitAmt = amount / participants.length
+        splits = participants.map((participantId) => {
+            return { user: participantId, amount: splitAmt }
+        })
+
+    }
+    else if (splitType === "exact") {
+        let sum = 0
+
+        for (const participant of participants) {
+            sum += participant.amount
+        }
+
+        if (Math.abs(sum - amount) > 0.01) {
+            throw new Error("Invalid amount")
+        }
+
+        splits = participants.map((p) => {
+            return { user: p.userId, amount: p.amount }
+        })
+
+    }
+    else if (splitType === "percentage") {
+        let sum = 0
+
+        for (const participant of participants) {
+            sum += participant.percentage
+        }
+
+        if (Math.abs(sum - 100) > 0.01) {
+            throw new Error("Percenatges don't add up to 100")
+        }
+
+        splits = participants.map((p) => {
+            return { user: p.userId, amount: (p.percentage / 100) * amount }
+        })
+
+    }
+    else {
+        throw new Error("Invalid split type")
+    }
+
+    return splits
+}
+
+async function updateExpense(req , res){
+    try{
+        const {expenseId} = req.params
+        const { amount , description , splitType , participants} = req.body
+
+        const expense = await Expense.findById(expenseId)
+
+        if(!expense){
+            return res.status(404).json({ error: "Expense doesn't exist" })
+        }
+        if(req.userId !== expense.paidBy.toString()){
+            return res.status(403).json({error : "Only the person who paid can edit the expense"})
+        }
+
+        let splits
+        try{
+            splits = calculateSplits(splitType , amount , participants)
+        }catch(err){
+            return res.status(400).json({error : err.message})
+        }
+
+        expense.amount = amount;
+        expense.description = description
+        expense.splitType = splitType
+        expense.splits = splits
+
+        await expense.save()
+        res.status(200).json(expense)
+
+    }catch (error) {
+
+        console.error(error.message);
+        res.status(500).json({ error: "Something went wrong" });
+
+    }
+}
+
+module.exports = {
+    addExpense, getExpenses, getBalances, getSettlements, deleteExpense , updateExpense
+}
