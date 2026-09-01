@@ -12,7 +12,8 @@ const expenseSchema = new mongoose.Schema({
             amount : {type : Number , required : true}
         }
     ],
-    date : {type : Date , default : Date.now}
+    date : {type : Date , default : Date.now},
+    category : {type : String , enum : ['food' , 'travel' , 'accommodation' , 'shopping' , 'utilities', 'entertainment', 'other'], default : 'other' } 
 })
 
 const Expense = mongoose.model('Expense' , expenseSchema)

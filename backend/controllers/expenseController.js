@@ -3,7 +3,7 @@ const Settlement = require('../models/Settlement')
 
 async function addExpense(req, res) {
     try {
-        const { groupId, amount, description, splitType, participants } = req.body
+        const { groupId, amount, description, splitType, participants, category } = req.body
         let splits
 
         try{
@@ -13,7 +13,7 @@ async function addExpense(req, res) {
         }
         
 
-        const expenseRes = new Expense({ group: groupId, paidBy: req.userId, amount, description, splitType, splits })
+        const expenseRes = new Expense({ group: groupId, paidBy: req.userId, amount, description, splitType, splits, category })
 
         await expenseRes.save()
         res.status(201).json({ message: "Expenses created" })
@@ -220,7 +220,7 @@ function calculateSplits(splitType, amount, participants) {
 async function updateExpense(req , res){
     try{
         const {expenseId} = req.params
-        const { amount , description , splitType , participants} = req.body
+        const { amount , description , splitType , participants , category} = req.body
 
         const expense = await Expense.findById(expenseId)
 
@@ -242,6 +242,7 @@ async function updateExpense(req , res){
         expense.description = description
         expense.splitType = splitType
         expense.splits = splits
+        expense.category = category
 
         await expense.save()
         res.status(200).json(expense)
