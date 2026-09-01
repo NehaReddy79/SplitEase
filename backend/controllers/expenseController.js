@@ -13,35 +13,35 @@ async function addExpense(req, res) {
             })
 
         }
-        else if(splitType === "exact"){
+        else if (splitType === "exact") {
             let sum = 0
 
-            for(const participant of participants){
+            for (const participant of participants) {
                 sum += participant.amount
             }
 
-            if( Math.abs(sum - amount) > 0.01){
-                return res.status(400).json({error : "Invalid amount"})
+            if (Math.abs(sum - amount) > 0.01) {
+                return res.status(400).json({ error: "Invalid amount" })
             }
 
             splits = participants.map((p) => {
-                return {user : p.userId , amount : p.amount}
+                return { user: p.userId, amount: p.amount }
             })
 
         }
-        else if(splitType === "percentage"){
+        else if (splitType === "percentage") {
             let sum = 0
 
-            for(const participant of participants){
+            for (const participant of participants) {
                 sum += participant.percentage
             }
 
-            if(Math.abs(sum - 100) > 0.01){
-                return res.status(400).json({error : "The percentages don't add up to 100"})
+            if (Math.abs(sum - 100) > 0.01) {
+                return res.status(400).json({ error: "The percentages don't add up to 100" })
             }
 
-            splits = participants.map((p) =>{
-                return {user : p.userId , amount : (p.percentage / 100) * amount}
+            splits = participants.map((p) => {
+                return { user: p.userId, amount: (p.percentage / 100) * amount }
             })
 
         }
@@ -92,11 +92,11 @@ async function getBalances(req, res) {
                 balances[user] = (balances[user] || 0) - split.amount
             }
         }
-        
 
-        const settlements = await Settlement.find({ group : groupId})
-        for(const settlement of settlements){
-            const from  = settlement.from.toString()
+
+        const settlements = await Settlement.find({ group: groupId })
+        for (const settlement of settlements) {
+            const from = settlement.from.toString()
             const to = settlement.to.toString()
 
             balances[from] = (balances[from] || 0) + settlement.amount
@@ -105,37 +105,37 @@ async function getBalances(req, res) {
 
         res.json(balances)
 
-    }catch(error){
+    } catch (error) {
         console.error(error.message)
-        res.status(500).json({error : "Something went wrong"})
+        res.status(500).json({ error: "Something went wrong" })
     }
-    
+
 }
 
-function simplifyDebts(balances){
+function simplifyDebts(balances) {
     const creditors = []
     const debtors = []
     const settlements = []
 
-    for( const [user , balance] of Object.entries(balances)){
-        if(balance > 0){
-            creditors.push({user , amount : balance})
-        }else if(balance < 0){
-            debtors.push({user , amount : -balance})
+    for (const [user, balance] of Object.entries(balances)) {
+        if (balance > 0) {
+            creditors.push({ user, amount: balance })
+        } else if (balance < 0) {
+            debtors.push({ user, amount: -balance })
         }
     }
 
-    creditors.sort((a , b) => b.amount - a.amount)
-    debtors.sort((a,b) => b.amount - a.amount)
+    creditors.sort((a, b) => b.amount - a.amount)
+    debtors.sort((a, b) => b.amount - a.amount)
 
-    let i = 0 , j = 0
+    let i = 0, j = 0
 
-    while(i < creditors.length && j < debtors.length){
-        const settlement = Math.min(creditors[i].amount , debtors[j].amount)
-        settlements.push({from: debtors[j].user , to: creditors[i].user , amount: settlement});
+    while (i < creditors.length && j < debtors.length) {
+        const settlement = Math.min(creditors[i].amount, debtors[j].amount)
+        settlements.push({ from: debtors[j].user, to: creditors[i].user, amount: settlement });
         creditors[i].amount -= settlement
         debtors[j].amount -= settlement
-        if (creditors[i].amount === 0 ) i++
+        if (creditors[i].amount === 0) i++
         if (debtors[j].amount === 0) j++
     }
 
@@ -143,10 +143,10 @@ function simplifyDebts(balances){
 
 }
 
-async function getSettlements(req, res){
-    try{
+async function getSettlements(req, res) {
+    try {
         const { groupId } = req.params
-        const expenses = await Expense.find({ group : groupId});
+        const expenses = await Expense.find({ group: groupId });
 
         let balances = {}
 
@@ -160,11 +160,11 @@ async function getSettlements(req, res){
                 balances[user] = (balances[user] || 0) - split.amount
             }
         }
-        
 
-        const settlementsRes = await Settlement.find({ group : groupId})
-        for(const settlement of settlementsRes){
-            const from  = settlement.from.toString()
+
+        const settlementsRes = await Settlement.find({ group: groupId })
+        for (const settlement of settlementsRes) {
+            const from = settlement.from.toString()
             const to = settlement.to.toString()
 
             balances[from] = (balances[from] || 0) + settlement.amount
@@ -172,13 +172,36 @@ async function getSettlements(req, res){
         }
 
         const settlements = simplifyDebts(balances)
-        
+
         res.json(settlements)
+
+    } catch (error) {
+        console.error(error.message)
+        res.status(500).json({ error: "Something went wrong" })
+    }
+}
+
+async function deleteExpense(req, res) {
+    try {
+        const { expenseId } = req.params
+
+        const expenseRes = await Expense.findById(expenseId)
+        if (!expenseRes) {
+            return res.status(404).json({ error: "Expense doesn't exist" })
+        }
+        if (req.userId === expenseRes.paidBy.toString()) {
+            await Expense.findByIdAndDelete(expenseId)
+
+            res.status(200).json({ message: "Expense deleted successfully" })
+        } else {
+            return res.status(403).json({ error: "Only group creator can delete expenses" })
+        }
 
     }catch(error){
         console.error(error.message)
         res.status(500).json({error : "Something went wrong"})
     }
+    
 }
 
-module.exports = { addExpense, getExpenses, getBalances , getSettlements }
+module.exports = { addExpense, getExpenses, getBalances, getSettlements , deleteExpense }
