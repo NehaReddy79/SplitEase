@@ -6,12 +6,12 @@ async function addExpense(req, res) {
         const { groupId, amount, description, splitType, participants, category } = req.body
         let splits
 
-        try{
-            splits = calculateSplits(splitType , amount , participants)
-        }catch(err){
-            return res.status(400).json({error : err.message})
+        try {
+            splits = calculateSplits(splitType, amount, participants)
+        } catch (err) {
+            return res.status(400).json({ error: err.message })
         }
-        
+
 
         const expenseRes = new Expense({ group: groupId, paidBy: req.userId, amount, description, splitType, splits, category })
 
@@ -217,25 +217,25 @@ function calculateSplits(splitType, amount, participants) {
     return splits
 }
 
-async function updateExpense(req , res){
-    try{
-        const {expenseId} = req.params
-        const { amount , description , splitType , participants , category} = req.body
+async function updateExpense(req, res) {
+    try {
+        const { expenseId } = req.params
+        const { amount, description, splitType, participants, category } = req.body
 
         const expense = await Expense.findById(expenseId)
 
-        if(!expense){
+        if (!expense) {
             return res.status(404).json({ error: "Expense doesn't exist" })
         }
-        if(req.userId !== expense.paidBy.toString()){
-            return res.status(403).json({error : "Only the person who paid can edit the expense"})
+        if (req.userId !== expense.paidBy.toString()) {
+            return res.status(403).json({ error: "Only the person who paid can edit the expense" })
         }
 
         let splits
-        try{
-            splits = calculateSplits(splitType , amount , participants)
-        }catch(err){
-            return res.status(400).json({error : err.message})
+        try {
+            splits = calculateSplits(splitType, amount, participants)
+        } catch (err) {
+            return res.status(400).json({ error: err.message })
         }
 
         expense.amount = amount;
@@ -247,7 +247,7 @@ async function updateExpense(req , res){
         await expense.save()
         res.status(200).json(expense)
 
-    }catch (error) {
+    } catch (error) {
 
         console.error(error.message);
         res.status(500).json({ error: "Something went wrong" });
@@ -255,6 +255,57 @@ async function updateExpense(req , res){
     }
 }
 
+async function getSpendingByCategory(req, res) {
+    try {
+        const { groupId } = req.params
+
+        const expenses = await Expense.find({ group: groupId })
+
+        let categoryTotals = {}
+
+        for (const expense of expenses) {
+            const category = expense.category
+            categoryTotals[category] = (categoryTotals[category] || 0) + expense.amount
+        }
+
+        res.status(200).json(categoryTotals)
+
+    } catch (error) {
+
+        console.error(error.message);
+        res.status(500).json({ error: "Something went wrong" });
+    }
+
+}
+
+async function getSpendingByPerson(req , res){
+    try {
+        const { groupId } = req.params
+
+        const expenses = await Expense.find({ group: groupId }).populate('paidBy' , 'name')
+
+        let personTotals = {}
+
+        for (const expense of expenses) {
+            const userId = expense.paidBy._id.toString()
+            const name = expense.paidBy.name
+            if(!personTotals[userId]){
+                personTotals[userId] = {name , total : 0}
+            }
+
+            personTotals[userId].total +=  expense.amount
+        }
+
+        res.status(200).json(personTotals)
+
+    } catch (error) {
+
+        console.error(error.message);
+        res.status(500).json({ error: "Something went wrong" });
+    }
+}
+
 module.exports = {
-    addExpense, getExpenses, getBalances, getSettlements, deleteExpense , updateExpense
+    addExpense, getExpenses, getBalances, getSettlements, deleteExpense,
+    updateExpense , getSpendingByCategory , getSpendingByPerson
 }
