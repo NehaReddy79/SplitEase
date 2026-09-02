@@ -7,6 +7,8 @@ async function recordSettlement(req, res) {
 
         const newSettlement = new Settlement({ group: groupId, from, to, amount })
         await newSettlement.save()
+        const io = req.app.get('io')
+        io.to(groupId).emit('settlementRecorded', newSettlement)
         res.status(201).json(newSettlement)
 
     }catch(error){

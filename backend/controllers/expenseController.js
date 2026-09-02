@@ -1,6 +1,6 @@
 const Expense = require('../models/Expense')
 const Settlement = require('../models/Settlement')
-const {Parser} = require('json2csv')
+const { Parser } = require('json2csv')
 
 async function addExpense(req, res) {
     try {
@@ -17,6 +17,10 @@ async function addExpense(req, res) {
         const expenseRes = new Expense({ group: groupId, paidBy: req.userId, amount, description, splitType, splits, category })
 
         await expenseRes.save()
+
+        const io = req.app.get('io')
+        io.to(groupId).emit('expenseAdded', expenseRes)
+
         res.status(201).json({ message: "Expenses created" })
 
     }
@@ -30,20 +34,20 @@ async function getExpenses(req, res) {
     try {
         const { groupId } = req.params
 
-        const {category , paidBy , from , to} = req.query
+        const { category, paidBy, from, to } = req.query
 
-        let filter = { group : groupId}
+        let filter = { group: groupId }
 
-        if(category){
+        if (category) {
             filter.category = category
         }
-        if(paidBy){
+        if (paidBy) {
             filter.paidBy = paidBy
         }
-        if(from || to){
+        if (from || to) {
             filter.date = {}
-            if( from ) { filter.date.$gte = new Date(from) }
-            if( to ) {filter.date.$lte = new Date(to)}
+            if (from) { filter.date.$gte = new Date(from) }
+            if (to) { filter.date.$lte = new Date(to) }
         }
 
         const expenseRes = await Expense.find(filter).populate("paidBy", "name email")
@@ -174,6 +178,9 @@ async function deleteExpense(req, res) {
         if (req.userId === expenseRes.paidBy.toString()) {
             await Expense.findByIdAndDelete(expenseId)
 
+            const io = req.app.get('io')
+            io.to(expenseRes.group.toString()).emit('expenseDeleted', expenseRes)
+
             res.status(200).json({ message: "Expense deleted successfully" })
         } else {
             return res.status(403).json({ error: "Only group creator can delete expenses" })
@@ -263,6 +270,8 @@ async function updateExpense(req, res) {
         expense.category = category
 
         await expense.save()
+        const io = req.app.get('io')
+        io.to(expense.group.toString()).emit('expenseUpdated', expense)
         res.status(200).json(expense)
 
     } catch (error) {
@@ -296,22 +305,22 @@ async function getSpendingByCategory(req, res) {
 
 }
 
-async function getSpendingByPerson(req , res){
+async function getSpendingByPerson(req, res) {
     try {
         const { groupId } = req.params
 
-        const expenses = await Expense.find({ group: groupId }).populate('paidBy' , 'name')
+        const expenses = await Expense.find({ group: groupId }).populate('paidBy', 'name')
 
         let personTotals = {}
 
         for (const expense of expenses) {
             const userId = expense.paidBy._id.toString()
             const name = expense.paidBy.name
-            if(!personTotals[userId]){
-                personTotals[userId] = {name , total : 0}
+            if (!personTotals[userId]) {
+                personTotals[userId] = { name, total: 0 }
             }
 
-            personTotals[userId].total +=  expense.amount
+            personTotals[userId].total += expense.amount
         }
 
         res.status(200).json(personTotals)
@@ -323,35 +332,35 @@ async function getSpendingByPerson(req , res){
     }
 }
 
-async function exportExpensesCsv(req , res){
-    try{
-        const {groupId} = req.params
-        const expenses = await Expense.find({group : groupId}).populate('paidBy' , 'name')
+async function exportExpensesCsv(req, res) {
+    try {
+        const { groupId } = req.params
+        const expenses = await Expense.find({ group: groupId }).populate('paidBy', 'name')
 
-        const csvData = expenses.map( exp =>({
-            date : exp.date.toISOString().split('T')[0],
-            description : exp.description,
-            category : exp.category,
-            amount : exp.amount,
-            paidBy : exp.paidBy.name,
-            splitType : exp.splitType
+        const csvData = expenses.map(exp => ({
+            date: exp.date.toISOString().split('T')[0],
+            description: exp.description,
+            category: exp.category,
+            amount: exp.amount,
+            paidBy: exp.paidBy.name,
+            splitType: exp.splitType
         }))
 
         const parser = new Parser()
 
         const csv = parser.parse(csvData)
 
-        res.header('Content-Type' , 'text/csv')
+        res.header('Content-Type', 'text/csv')
         res.attachment('expenses.csv')
         res.send(csv)
 
-    }catch(error){
+    } catch (error) {
         console.error(error.message)
-        res.status(500).json({error : "Something went wrong"})
+        res.status(500).json({ error: "Something went wrong" })
     }
 }
 
 module.exports = {
     addExpense, getExpenses, getBalances, getSettlements, deleteExpense,
-    updateExpense , getSpendingByCategory , getSpendingByPerson , exportExpensesCsv
+    updateExpense, getSpendingByCategory, getSpendingByPerson, exportExpensesCsv
 }
