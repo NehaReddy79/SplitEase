@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const http = require('http')
+const cors = require('cors')
 const {Server} = require('socket.io')
 const authRoutes = require('./routes/authRoutes')
 const groupRoutes = require('./routes/groupRoutes')
@@ -10,6 +11,7 @@ const settlementRoutes = require('./routes/settlementRoutes')
 
 
 const app = express();
+app.use(cors())
 
 app.use(express.json())
 

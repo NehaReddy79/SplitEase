@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Socket Test</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+<body>
+    <h2>Socket.io Test</h2>
+    <div id="log"></div>
+
+    <script>
+        const socket = io("http://localhost:5000");
+        const groupId = "6a91683105e46ffb189073fb"; 
+
+        socket.on("connect", () => {
+            log("Connected: " + socket.id);
+            socket.emit("joinGroup", groupId);
+        });
+
+        socket.on("expenseAdded", (data) => {
+            log("expenseAdded: " + JSON.stringify(data));
+        });
+
+        socket.on("expenseDeleted", (data) => {
+            log("expenseDeleted: " + JSON.stringify(data));
+        });
+
+        socket.on("expenseUpdated", (data) => {
+            log("expenseUpdated: " + JSON.stringify(data));
+        });
+
+        socket.on("settlementRecorded", (data) => {
+            log("settlementRecorded: " + JSON.stringify(data));
+        });
+
+        function log(msg) {
+            document.getElementById("log").innerHTML += "<p>" + msg + "</p>";
+        }
+    </script>
+</body>
+</html>
