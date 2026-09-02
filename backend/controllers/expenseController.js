@@ -29,9 +29,26 @@ async function getExpenses(req, res) {
     try {
         const { groupId } = req.params
 
-        const expenseRes = await Expense.find({ group: groupId }).populate("paidBy", "name email")
+        const {category , paidBy , from , to} = req.query
+
+        let filter = { group : groupId}
+
+        if(category){
+            filter.category = category
+        }
+        if(paidBy){
+            filter.paidBy = paidBy
+        }
+        if(from || to){
+            filter.date = {}
+            if( from ) { filter.date.$gte = new Date(from) }
+            if( to ) {filter.date.$lte = new Date(to)}
+        }
+
+        const expenseRes = await Expense.find(filter).populate("paidBy", "name email")
 
         res.status(200).json(expenseRes)
+        
     } catch (error) {
         console.error(error.message)
         res.status(500).json({ error: "Something went wrong" })
