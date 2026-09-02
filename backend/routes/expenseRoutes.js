@@ -1,7 +1,8 @@
 const express = require('express')
 const router = express.Router()
 const {addExpense , getExpenses , getBalances, getSettlements, deleteExpense ,
-     updateExpense, getSpendingByCategory , getSpendingByPerson } = require('../controllers/expenseController')
+     updateExpense, getSpendingByCategory , getSpendingByPerson , exportExpensesCsv
+      } = require('../controllers/expenseController')
 const verifyToken = require('../middleware/authMiddleware')
 const verifyUser = require('../middleware/groupAuthMiddleware')
 
@@ -13,6 +14,7 @@ router.delete('/:expenseId' , verifyToken ,  deleteExpense)
 router.put('/:expenseId' , verifyToken , updateExpense)
 router.get('/:groupId/analytics/category', verifyToken, verifyUser, getSpendingByCategory)
 router.get('/:groupId/analytics/person', verifyToken, verifyUser, getSpendingByPerson)
+router.get('/:groupId/export/csv' , verifyToken , verifyUser , exportExpensesCsv)
 
 module.exports = router
 

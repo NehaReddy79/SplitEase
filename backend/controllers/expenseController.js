@@ -1,5 +1,6 @@
 const Expense = require('../models/Expense')
 const Settlement = require('../models/Settlement')
+const {Parser} = require('json2csv')
 
 async function addExpense(req, res) {
     try {
@@ -48,7 +49,7 @@ async function getExpenses(req, res) {
         const expenseRes = await Expense.find(filter).populate("paidBy", "name email")
 
         res.status(200).json(expenseRes)
-        
+
     } catch (error) {
         console.error(error.message)
         res.status(500).json({ error: "Something went wrong" })
@@ -322,7 +323,35 @@ async function getSpendingByPerson(req , res){
     }
 }
 
+async function exportExpensesCsv(req , res){
+    try{
+        const {groupId} = req.params
+        const expenses = await Expense.find({group : groupId}).populate('paidBy' , 'name')
+
+        const csvData = expenses.map( exp =>({
+            date : exp.date.toISOString().split('T')[0],
+            description : exp.description,
+            category : exp.category,
+            amount : exp.amount,
+            paidBy : exp.paidBy.name,
+            splitType : exp.splitType
+        }))
+
+        const parser = new Parser()
+
+        const csv = parser.parse(csvData)
+
+        res.header('Content-Type' , 'text/csv')
+        res.attachment('expenses.csv')
+        res.send(csv)
+
+    }catch(error){
+        console.error(error.message)
+        res.status(500).json({error : "Something went wrong"})
+    }
+}
+
 module.exports = {
     addExpense, getExpenses, getBalances, getSettlements, deleteExpense,
-    updateExpense , getSpendingByCategory , getSpendingByPerson
+    updateExpense , getSpendingByCategory , getSpendingByPerson , exportExpensesCsv
 }
