@@ -3,7 +3,9 @@ const Group = require('../models/Group')
 async function createGroup(req, res) {
     try {
         const { name } = req.body
-
+        if (!name || !name.trim()) {
+            return res.status(400).json({ error: "Group name is required" });
+        }
         const groupRes = new Group({ name, createdBy: req.userId, members: [req.userId] })
 
         await groupRes.save();
