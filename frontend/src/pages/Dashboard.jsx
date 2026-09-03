@@ -1,46 +1,47 @@
-import { useState , useEffect } from "react";
-import { getMyGroups , createGroup } from "../api/groups";
+import { useState, useEffect } from "react";
+import { getMyGroups, createGroup } from "../api/groups";
+import { Link } from "react-router-dom";
 
-export function Dashboard(){
+export function Dashboard() {
 
-    const [name , setName] = useState('')
-    const [groups , setGroups] = useState([])
+    const [name, setName] = useState('')
+    const [groups, setGroups] = useState([])
 
-    useEffect(() =>{
-        async function fetchGroups(){
+    useEffect(() => {
+        async function fetchGroups() {
             const res = await getMyGroups();
             setGroups(res.data)
         }
         fetchGroups()
     }, [])
 
-    async function handleSubmit(e){
+    async function handleSubmit(e) {
         e.preventDefault()
-        if(!name.trim()){
+        if (!name.trim()) {
             alert('Group name cannot be empty')
             return
         }
-        try{
+        try {
             createGroup(name)
             alert('Group created successfully')
             const res = await getMyGroups()
             setGroups(res.data)
             setName('')
-        }catch(error){
+        } catch (error) {
             alert(error.response?.data?.error || 'Something went wrong')
         }
     }
-    return(
+    return (
         <>
             <div>
-                {(groups.length === 0) ? 
-                <p>You are not in any groups yet.</p> :
-                groups.map((group) =>(
-                    <div>
-                    <p>Group name : {group.name}</p>
-                    <p>Group Id : {group._id}</p>
-                    </div>
-                ))
+                {(groups.length === 0) ?
+                    <p>You are not in any groups yet.</p> :
+                    groups.map((group) => (
+                        <div>
+                            <p>Group name : {group.name}</p>
+                            <p>Group Id : {group._id}</p>
+                        </div>
+                    ))
                 }
             </div>
 
@@ -51,6 +52,14 @@ export function Dashboard(){
 
                 </form>
             </div>
+
+            {groups.map((group) => (
+            <Link key={group._id} to={`/groups/${group._id}`}>
+                <div>
+                    <p>Group name: {group.name}</p>
+                </div>
+            </Link>
+            ))}
         </>
     )
 }
