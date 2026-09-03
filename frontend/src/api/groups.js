@@ -8,8 +8,8 @@ export const getMyGroups = () =>{
     return api.get("/groups/")
 }
 
-export const addMember = (groupId , userId) =>{
-    return api.post(`/groups/${groupId}/members` , {userId})
+export const addMember = (groupId , email) =>{
+    return api.post(`/groups/${groupId}/members` , {email})
 }
 
 export const getGroupMembers = (groupId) =>{
