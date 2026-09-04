@@ -11,12 +11,24 @@ export function ExpensesPage() {
     const [participants, setParticipants] = useState([])
     const [description, setDescription] = useState('')
     const [category, setCategory] = useState('')
+    const [splitType , setSplitType] = useState('equal')
     const [groupMembers , setGroupMembers] = useState([])
 
     async function handleSubmit(e) {
         e.preventDefault()
         try {
-            await addExpense({ groupId, amount: Number(amount), description, splitType: "equal", participants, category })
+
+            let formatPart
+
+            if(splitType === "equal"){
+                formatPart = participants.map(p => p.userId)
+            }else if(splitType === "exact"){
+                formatPart = participants.map(p => ({userId : p.userId , amount : p.amount}))
+            }else if(splitType === "percentage"){
+                formatPart = participants.map(p => ({userId : p.userId , percentage : p.percentage}))
+            }
+            
+            await addExpense({ groupId, amount: Number(amount), description, splitType, participants : formatPart, category })
             alert("Expense added successfully!")
             const res = await getExpenses(groupId)
             setExpenses(res.data)
@@ -64,21 +76,59 @@ export function ExpensesPage() {
                         <option value="other">Other</option>
                     </select>
 
-                    {groupMembers.map((m) => (
-                        <label key={m._id}>
-                            <input type="checkbox"
-                                checked={participants.includes(m._id)}
-                                onChange={() => {
-                                    if (participants.includes(m._id)) {
-                                        setParticipants(participants.filter(id => id !== m._id))
-                                    } else {
-                                        setParticipants([...participants, m._id])
-                                    }
-                                }}
-                            ></input>
-                            {m.name}
-                        </label>
-                    ))}
+                    <select value={splitType} onChange={(e) => setSplitType(e.target.value)}> 
+                        <option value="equal">Equal</option>
+                        <option value="exact">Exact</option>
+                        <option value="percentage">Percentage</option>
+                    </select>
+
+                    {groupMembers.map((m) => {
+                        const isSelected = participants.some(p => p.userId === m._id)
+                        return(
+                            <div key={m._id}>
+                                <label>
+                                    <input type="checkbox"
+                                        checked={isSelected}
+                                        onChange={() => {
+                                            if (participants.some(p => p.userId === m._id)) {
+                                                setParticipants(participants.filter(p => p.userId !== m._id))
+                                            } else {
+                                                setParticipants([...participants,{ userId :  m._id , amount : 0 , percentage : 0}])
+                                            }
+                                        }}
+                                    ></input>
+                                    {m.name}
+                                </label>
+
+                                {isSelected && splitType === "exact" && (
+                                    <input
+                                        type="number"
+                                        placeholder="Amount"
+                                        value={participants.find(p => p.userId === m._id).amount}
+                                        onChange={(e) =>{
+                                            setParticipants(participants.map(p =>
+                                                p.userId === m._id ? {...p , amount : Number(e.target.value)} : p
+                                            ))
+                                        }}
+                                    ></input>
+                                )}
+
+                                {isSelected && splitType === "percentage" && (
+                                    <input
+                                        type="number"
+                                        placeholder="Percentage"
+                                        value={participants.find(p => p.userId === m._id).percentage}
+                                        onChange={(e) =>{
+                                            setParticipants(participants.map(p =>
+                                                p.userId === m._id ? {...p , percentage : Number(e.target.value)} : p
+                                            ))
+                                        }}
+                                    ></input>
+                                )}
+                            </div>
+                            
+                        )
+                    })}
                     <button type="submit">Submit</button>
                 </form>
             </div>
