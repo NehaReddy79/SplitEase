@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { getExpenses, addExpense } from "../api/expenses";
 import { getGroupMembers } from "../api/groups";
 import { useParams } from "react-router-dom";
+import socket from '../socket'
 
 export function ExpensesPage() {
 
@@ -58,6 +59,27 @@ export function ExpensesPage() {
 
     }, [groupId])
 
+    useEffect(() => {
+    socket.emit('joinGroup', groupId);
+
+    socket.on('expenseAdded', (newExpense) => {
+        setExpenses(prev => [...prev, newExpense]);
+    });
+
+    socket.on('expenseDeleted', (deletedExpense) => {
+        setExpenses(prev => prev.filter(e => e._id !== deletedExpense._id));
+    });
+
+    socket.on('expenseUpdated', (updatedExpense) => {
+        setExpenses(prev => prev.map(e => e._id === updatedExpense._id ? updatedExpense : e));
+    });
+
+    return () => {
+        socket.off('expenseAdded');
+        socket.off('expenseDeleted');
+        socket.off('expenseUpdated');
+    };
+}, [groupId]);
 
     return (
         <>
