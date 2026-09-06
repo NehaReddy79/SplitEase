@@ -51,7 +51,7 @@ export function SettlementsPage() {
                             <p>To : {getMemberName(settlement.to)} </p>
                             <p>Amount : {settlement.amount}</p>
                             {localStorage.getItem('userId') === settlement.from && <button onClick={() => handleSettlement(settlement)}>Settle</button> }
-                            
+                            <p> </p>
                         </div>
                     ))
                 }

@@ -106,6 +106,7 @@ export function GroupDetail(){
                     <p>Paid By : {e.paidBy.name}</p>
                     <p>Split Type :{e.splitType} </p>
                     <p>Category : {e.category} </p>
+                    <p> </p>
                 </div>
             ))}
           </div>
