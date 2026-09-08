@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { getMyGroups, createGroup } from "../api/groups";
 import { Link } from "react-router-dom";
+import './Dashboard.css'
 
 export function Dashboard() {
 
@@ -33,33 +34,43 @@ export function Dashboard() {
     }
     return (
         <>
-            <div>
-                {(groups.length === 0) ?
-                    <p>You are not in any groups yet.</p> :
-                    groups.map((group) => (
-                        <div>
-                            <p>Group name : {group.name}</p>
-                            <p>Group Id : {group._id}</p>
+            <div className="dashboard-page">
+                <nav className="dashboard-nav">
+                    <h1><span>SplitEase</span></h1>
+                </nav>
+            
+                <div className="dashboard-content">
+
+                    <h2>Your groups</h2>
+                    <p className="tagline">Track shared expenses, see who owes what, and settle up in seconds.</p>
+
+                    <div className="create-group-card">
+                        <p className="hint">Start a new group for a trip, flat, or event</p>
+                        <form onSubmit={handleSubmit}>
+                            <input type="text" value={name} placeholder="Group name" onChange={(e) => setName(e.target.value)}></input>
+                            <button type="submit">Create group</button>
+
+                        </form>
+                    </div>
+
+                    <h2 className="dashboard-section-title">Your groups</h2>
+                    {(groups.length === 0) ?
+                        (<p className="empty-state">You are not in any groups yet. Create one above to get started.</p>) :
+                        <div className="group-grid">
+                            {groups.map((group) => (
+                                <Link key={group._id} to={`/groups/${group._id}`} className="group-card">
+                                    <div className="group-card-icon">{group.name.charAt(0).toUpperCase()}</div>
+                                    <h3>{group.name}</h3>
+                                    <p>Click to view details </p>
+                                    <div className="view-arrow">View group →</div>
+                                </Link>
+                            ))}
                         </div>
-                    ))
-                }
-            </div>
 
-            <div>
-                <form onSubmit={handleSubmit}>
-                    <input type="text" value={name} placeholder="Group name" onChange={(e) => setName(e.target.value)}></input>
-                    <button type="submit">Submit</button>
-
-                </form>
-            </div>
-
-            {groups.map((group) => (
-            <Link key={group._id} to={`/groups/${group._id}`}>
-                <div>
-                    <p>Group name: {group.name}</p>
+                    }
                 </div>
-            </Link>
-            ))}
+            </div>
+
         </>
     )
 }
