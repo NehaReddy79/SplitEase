@@ -1,0 +1,99 @@
+.overview-section {
+  margin-bottom: var(--space-8);
+}
+
+.overview-section h3 {
+  font-size: 1.1rem;
+  color: #1e1e2e;
+  margin-bottom: var(--space-4);
+}
+
+.add-member-card {
+  background: white;
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03), 0 12px 24px -14px rgba(0,0,0,0.1);
+  border: 1px solid #f1ebe5;
+  margin-bottom: var(--space-8);
+}
+
+.add-member-card p.hint {
+  color: var(--color-text-muted);
+  font-size: 0.88rem;
+  margin-bottom: var(--space-3);
+}
+
+.add-member-card form {
+  display: flex;
+  gap: 10px;
+}
+
+.add-member-card input {
+  flex: 1;
+  border: 1.5px solid #e7e5e4;
+}
+
+.add-member-card input:focus {
+  border-color: #fb923c;
+  box-shadow: 0 0 0 3px rgba(251, 146, 60, 0.15);
+}
+
+.add-member-card button {
+  background: #fb923c;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.add-member-card button:hover {
+  background: #f97316;
+}
+
+.member-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.member-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: white;
+  padding: 14px 18px;
+  border-radius: var(--radius-md);
+  border: 1px solid #f1ebe5;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+
+.member-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #ffedd5;
+  color: #ea580c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.member-info h4 {
+  font-size: 0.95rem;
+  color: #1e1e2e;
+}
+
+.member-info p {
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+}
+
+.empty-state {
+  text-align: center;
+  padding: var(--space-6);
+  color: var(--color-text-muted);
+  background: white;
+  border-radius: var(--radius-lg);
+  border: 1px dashed #e7e0d8;
+}
