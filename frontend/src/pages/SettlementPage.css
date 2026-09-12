@@ -43,3 +43,8 @@
 .settle-btn:hover {
   background: #fbe5a3 !important;
 }
+.amount-input {
+  width: 90px !important;
+  padding: 6px 10px !important;
+  text-align: right;
+}

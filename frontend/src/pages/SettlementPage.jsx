@@ -10,6 +10,7 @@ export function SettlementsPage() {
     const [settlements, setSettlements] = useState([])
     const [groupMembers, setGroupMembers] = useState([])
     const [pendingSettlements, setPendingSettlements] = useState([])
+    const [customAmounts , setCustomAmounts] = useState({})
     const { groupId } = useParams()
 
     useEffect(() => {
@@ -35,9 +36,10 @@ export function SettlementsPage() {
         return member ? member.name : userId;
     }
 
-    async function handleSettlement(settlement) {
+    async function handleSettlement(settlement , index) {
         try {
-            await recordSettlement(groupId, settlement.to, settlement.amount)
+            const amountToPay = Number(Number(customAmounts[index] ?? settlement.amount).toFixed(2))
+            await recordSettlement(groupId, settlement.to, amountToPay)
             alert('Settlement recorded')
             const res = await getSettlements(groupId)
             setSettlements(res.data)
@@ -79,10 +81,19 @@ export function SettlementsPage() {
                                 </span>
                                 <div style={{ display: 'flex', alignItems: 'center' }}>
                                     <span className="settlement-amount">₹{settlement.amount.toFixed(2)}</span>
+                                    
                                     {localStorage.getItem('userId') === settlement.from && (
-                                        <button className="settle-btn" onClick={() => handleSettlement(settlement)}>
+                                        <>
+                                        <input type="number" 
+                                            step="0.01"
+                                            className="amount-input"
+                                            value={customAmounts[index] ?? settlement.amount.toFixed(2)} 
+                                            onChange={(e) => {setCustomAmounts({ ...customAmounts, [index] : (e.target.value)})}}>
+                                        </input>
+                                        <button className="settle-btn" onClick={() => handleSettlement(settlement , index)}>
                                             Mark as paid
                                         </button>
+                                        </>
                                     )}
                                 </div>
                             </div>
