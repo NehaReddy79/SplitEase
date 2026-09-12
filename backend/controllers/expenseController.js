@@ -80,7 +80,7 @@ async function getBalances(req, res) {
         }
 
 
-        const settlements = await Settlement.find({ group: groupId })
+        const settlements = await Settlement.find({ group: groupId , status:'confirmed' })
         for (const settlement of settlements) {
             const from = settlement.from.toString()
             const to = settlement.to.toString()
@@ -148,7 +148,7 @@ async function getSettlements(req, res) {
         }
 
 
-        const settlementsRes = await Settlement.find({ group: groupId })
+        const settlementsRes = await Settlement.find({ group: groupId  , status:'confirmed'})
         for (const settlement of settlementsRes) {
             const from = settlement.from.toString()
             const to = settlement.to.toString()
