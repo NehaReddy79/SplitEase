@@ -7,12 +7,14 @@ import { GroupOverview } from './pages/GroupOverview';
 import { ExpensesPage } from './pages/ExpensesPage';
 import { BalancesPage } from './pages/BalancesPage';
 import { SettlementsPage } from './pages/SettlementPage';
+import { Navbar } from "./components/Navbar";
 
 function App() {
 
 
   return (
     <BrowserRouter>
+      <Navbar />
       <Routes>
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />

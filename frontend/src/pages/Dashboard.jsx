@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { getMyGroups, createGroup } from "../api/groups";
-import { Link } from "react-router-dom";
+import { Link , useNavigate} from "react-router-dom";
 import './Dashboard.css'
 
 export function Dashboard() {
 
     const [name, setName] = useState('')
     const [groups, setGroups] = useState([])
+    const navigate = useNavigate()
 
     useEffect(() => {
         async function fetchGroups() {
@@ -15,6 +16,12 @@ export function Dashboard() {
         }
         fetchGroups()
     }, [])
+
+    function handleLogout(){
+        localStorage.removeItem('token')
+        localStorage.removeItem('userId')
+        navigate('/login')
+    }
 
     async function handleSubmit(e) {
         e.preventDefault()
@@ -35,9 +42,6 @@ export function Dashboard() {
     return (
         <>
             <div className="dashboard-page">
-                <nav className="dashboard-nav">
-                    <h1><span>SplitEase</span></h1>
-                </nav>
             
                 <div className="dashboard-content">
 

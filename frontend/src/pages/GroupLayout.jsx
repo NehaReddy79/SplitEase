@@ -6,9 +6,7 @@ export function GroupLayout() {
 
     return (
         <div className='group-page'>
-            <nav className='group-nav'>
-                <h1><span>SplitEase</span></h1>
-            </nav>
+            
             <div className='group-content'>
                 <div className='group-tabs'>
                         <NavLink to={`/groups/${groupId}`} end className={({isActive}) => isActive ? 'active' : ''}>
