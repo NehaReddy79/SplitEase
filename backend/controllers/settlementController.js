@@ -42,9 +42,23 @@ async function confirmSettlement(req, res) {
 
         res.status(200).json(settlement)
     } catch (error) {
-        console.error(error.message);
-        res.status(500).json({ error: "Something went wrong" });
+        console.error(error.message)
+        res.status(500).json({ error: "Something went wrong" })
     }
 }
 
-module.exports = { recordSettlement , confirmSettlement }
+async function getPendingSettlements(req, res) {
+    try {
+        const { groupId } = req.params
+        const settlements = await Settlement.find({ group: groupId, status: 'pending' })
+            .populate('from', 'name')
+            .populate('to', 'name')
+
+        res.status(200).json(settlements)
+    } catch (error) {
+        console.error(error.message)
+        res.status(500).json({ error: "Something went wrong" })
+    }
+}
+
+module.exports = { recordSettlement , confirmSettlement , getPendingSettlements }

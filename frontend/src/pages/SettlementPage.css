@@ -33,13 +33,13 @@
 
 .settle-btn {
   background: white !important;
-  color: #16a34a !important;
-  border: 1.5px solid #16a34a !important;
+  color: #fb923c !important;
+  border: 1.5px solid #fb923c !important;
   font-size: 0.85rem;
   padding: 6px 14px;
   margin-left: 14px;
 }
 
 .settle-btn:hover {
-  background: #f0fdf4 !important;
+  background: #fbe5a3 !important;
 }
