@@ -1,0 +1,35 @@
+.balance-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.balance-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  padding: 16px 20px;
+  border-radius: var(--radius-md);
+  border: 1px solid #f1ebe5;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+
+.balance-name {
+  font-size: 0.98rem;
+  color: #1e1e2e;
+  font-weight: 500;
+}
+
+.balance-amount {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.balance-amount.positive {
+  color: #16a34a;
+}
+
+.balance-amount.negative {
+  color: #dc2626;
+}

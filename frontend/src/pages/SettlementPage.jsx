@@ -3,6 +3,7 @@ import { getSettlements } from "../api/expenses";
 import { recordSettlement } from "../api/settlements";
 import { useParams } from "react-router-dom";
 import { getGroupMembers } from "../api/groups";
+import './SettlementPage.css'
 
 export function SettlementsPage() {
 
@@ -34,26 +35,39 @@ export function SettlementsPage() {
             alert('Settlement recorded')
             const res = await getSettlements(groupId)
             setSettlements(res.data)
-        }catch(error){
+        } catch (error) {
             alert(error.response?.data?.error || "Something went wrong")
         }
-        
+
     }
 
     return (
         <>
-            <div>
+            <div className="overview-section">
+                <h3>Settlements</h3>
                 {(settlements.length === 0) ?
-                    <p>No settlements yet.</p> :
-                    settlements.map((settlement, index) => (
-                        <div key={index}>
-                            <p>From : {getMemberName(settlement.from)} </p>
-                            <p>To : {getMemberName(settlement.to)} </p>
-                            <p>Amount : {settlement.amount}</p>
-                            {localStorage.getItem('userId') === settlement.from && <button onClick={() => handleSettlement(settlement)}>Settle</button> }
-                            <p> </p>
-                        </div>
-                    ))
+                    <div className="empty-state">No settlements yet.</div> :
+
+                    <div className="settlement-list">
+                        {settlements.map((settlement, index) => (
+                            <div className="settlement-card" key={index}>
+                                <span className="settlement-text">
+                                    {getMemberName(settlement.from)}
+                                    <span className="arrow">→</span>
+                                    {getMemberName(settlement.to)}
+                                </span>
+                                <div style={{ display: 'flex', alignItems: 'center' }}>
+                                    <span className="settlement-amount">₹{settlement.amount.toFixed(2)}</span>
+                                    {localStorage.getItem('userId') === settlement.from && (
+                                        <button className="settle-btn" onClick={() => handleSettlement(settlement)}>
+                                            Mark as paid
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
                 }
             </div>
         </>

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { getBalances } from "../api/expenses";
 import { useParams } from "react-router-dom";
 import { getGroupMembers } from "../api/groups";
+import './BalancesPage.css'
 
 export function BalancesPage() {
 
@@ -30,14 +31,24 @@ export function BalancesPage() {
 
     return (
         <>
-            <div>
-                {Object.entries(balances).map(([userId , amount]) => (
-                    <div key={userId}>
-                    <p>Name : {getMemberName(userId)}</p>
-                    <p>Amount : {amount} </p>
+            <div className="overview-section">
+                <h3>Balances</h3>
+                {Object.keys(balances).length === 0 ?
+                    <div className="empty-state"> No balances yet.</div>
+                    :
+                    <div className="balance-list">
+                        {Object.entries(balances).map(([userId, amount]) => (
+                            <div className="balance-card" key={userId}>
+                                <span className="balance-name">{getMemberName(userId)}</span>
+                                <span className={`balance-amount ${amount >= 0 ? 'positive' : 'negative'}`}>
+                                    {amount >= 0 ? `+₹${amount.toFixed(2)}` : `-₹${Math.abs(amount).toFixed(2)}`}
+                                </span>
+                            </div>
+                        ))}
                     </div>
-                ))}
+                }
             </div>
+            
         </>
     )
 }
