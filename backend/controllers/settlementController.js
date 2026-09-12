@@ -1,10 +1,27 @@
 const Settlement = require('../models/Settlement')
+const { calculateBalances } = require('../controllers/expenseController')
 
 async function recordSettlement(req, res) {
     try {
         const { groupId, to, amount } = req.body
         const from = req.userId
+        
+        let balances = await calculateBalances(groupId)
+        const fromBalance = balances[from] || 0
+        const toBalance = balances[to] || 0
 
+
+        if (fromBalance >= 0) {
+            return res.status(400).json({ error: "You don't owe any money in this group" });
+        }
+        if (amount > Math.abs(fromBalance)) {
+            return res.status(400).json({ error: "Amount exceeds what you owe" });
+        }
+        if (toBalance <= 0 || amount > toBalance) {
+            return res.status(400).json({ error: "This user is not owed that much" });
+        }
+
+        
         const newSettlement = new Settlement({ group: groupId, from, to, amount })
         await newSettlement.save()
         const io = req.app.get('io')

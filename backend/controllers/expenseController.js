@@ -62,32 +62,8 @@ async function getExpenses(req, res) {
 
 async function getBalances(req, res) {
     try {
-        const { groupId } = req.params;
-
-        const expenses = await Expense.find({ group: groupId })
-
-        let balances = {}
-
-        for (const expense of expenses) {
-            const paidBy = expense.paidBy.toString()
-            balances[paidBy] = (balances[paidBy] || 0) + expense.amount
-
-            for (const split of expense.splits) {
-                const user = split.user.toString()
-
-                balances[user] = (balances[user] || 0) - split.amount
-            }
-        }
-
-
-        const settlements = await Settlement.find({ group: groupId , status:'confirmed' })
-        for (const settlement of settlements) {
-            const from = settlement.from.toString()
-            const to = settlement.to.toString()
-
-            balances[from] = (balances[from] || 0) + settlement.amount
-            balances[to] = (balances[to] || 0) - settlement.amount
-        }
+        const { groupId } = req.params
+        let balances = await calculateBalances(groupId)          
 
         res.json(balances)
 
@@ -132,33 +108,8 @@ function simplifyDebts(balances) {
 async function getSettlements(req, res) {
     try {
         const { groupId } = req.params
-        const expenses = await Expense.find({ group: groupId });
-
-        let balances = {}
-
-        for (const expense of expenses) {
-            const paidBy = expense.paidBy.toString()
-            balances[paidBy] = (balances[paidBy] || 0) + expense.amount
-
-            for (const split of expense.splits) {
-                const user = split.user.toString()
-
-                balances[user] = (balances[user] || 0) - split.amount
-            }
-        }
-
-
-        const settlementsRes = await Settlement.find({ group: groupId  , status:'confirmed'})
-        for (const settlement of settlementsRes) {
-            const from = settlement.from.toString()
-            const to = settlement.to.toString()
-
-            balances[from] = (balances[from] || 0) + settlement.amount
-            balances[to] = (balances[to] || 0) - settlement.amount
-        }
-
+        let balances = await calculateBalances(groupId)
         const settlements = simplifyDebts(balances)
-
         res.json(settlements)
 
     } catch (error) {
@@ -360,7 +311,32 @@ async function exportExpensesCsv(req, res) {
     }
 }
 
+async function calculateBalances(groupId) {
+    const expenses = await Expense.find({ group: groupId })
+    let balances = {}
+
+    for (const expense of expenses) {
+        const paidBy = expense.paidBy.toString()
+        balances[paidBy] = (balances[paidBy] || 0) + expense.amount
+        for (const split of expense.splits) {
+            const user = split.user.toString()
+            balances[user] = (balances[user] || 0) - split.amount
+        }
+    }
+
+    const settlements = await Settlement.find({ group: groupId, status: 'confirmed' })
+    for (const settlement of settlements) {
+        const from = settlement.from.toString()
+        const to = settlement.to.toString()
+        balances[from] = (balances[from] || 0) + settlement.amount
+        balances[to] = (balances[to] || 0) - settlement.amount
+    }
+
+    return balances
+}
+
 module.exports = {
     addExpense, getExpenses, getBalances, getSettlements, deleteExpense,
-    updateExpense, getSpendingByCategory, getSpendingByPerson, exportExpensesCsv
+    updateExpense, getSpendingByCategory, getSpendingByPerson, exportExpensesCsv,
+    calculateBalances
 }
