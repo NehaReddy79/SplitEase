@@ -3,6 +3,7 @@ import { getExpenses, addExpense } from "../api/expenses";
 import { getGroupMembers } from "../api/groups";
 import { useParams } from "react-router-dom";
 import socket from '../socket'
+import './ExpensesPage.css'
 
 export function ExpensesPage() {
 
@@ -12,8 +13,8 @@ export function ExpensesPage() {
     const [participants, setParticipants] = useState([])
     const [description, setDescription] = useState('')
     const [category, setCategory] = useState('')
-    const [splitType , setSplitType] = useState('equal')
-    const [groupMembers , setGroupMembers] = useState([])
+    const [splitType, setSplitType] = useState('equal')
+    const [groupMembers, setGroupMembers] = useState([])
 
     async function handleSubmit(e) {
         e.preventDefault()
@@ -21,15 +22,15 @@ export function ExpensesPage() {
 
             let formatPart
 
-            if(splitType === "equal"){
+            if (splitType === "equal") {
                 formatPart = participants.map(p => p.userId)
-            }else if(splitType === "exact"){
-                formatPart = participants.map(p => ({userId : p.userId , amount : p.amount}))
-            }else if(splitType === "percentage"){
-                formatPart = participants.map(p => ({userId : p.userId , percentage : p.percentage}))
+            } else if (splitType === "exact") {
+                formatPart = participants.map(p => ({ userId: p.userId, amount: p.amount }))
+            } else if (splitType === "percentage") {
+                formatPart = participants.map(p => ({ userId: p.userId, percentage: p.percentage }))
             }
-            
-            await addExpense({ groupId, amount: Number(amount), description, splitType, participants : formatPart, category })
+
+            await addExpense({ groupId, amount: Number(amount), description, splitType, participants: formatPart, category })
             alert("Expense added successfully!")
             const res = await getExpenses(groupId)
             setExpenses(res.data)
@@ -60,115 +61,132 @@ export function ExpensesPage() {
     }, [groupId])
 
     useEffect(() => {
-    socket.emit('joinGroup', groupId);
+        socket.emit('joinGroup', groupId);
 
-    socket.on('expenseAdded', (newExpense) => {
-        setExpenses(prev => [...prev, newExpense]);
-    });
+        socket.on('expenseAdded', (newExpense) => {
+            setExpenses(prev => [...prev, newExpense]);
+        });
 
-    socket.on('expenseDeleted', (deletedExpense) => {
-        setExpenses(prev => prev.filter(e => e._id !== deletedExpense._id));
-    });
+        socket.on('expenseDeleted', (deletedExpense) => {
+            setExpenses(prev => prev.filter(e => e._id !== deletedExpense._id));
+        });
 
-    socket.on('expenseUpdated', (updatedExpense) => {
-        setExpenses(prev => prev.map(e => e._id === updatedExpense._id ? updatedExpense : e));
-    });
+        socket.on('expenseUpdated', (updatedExpense) => {
+            setExpenses(prev => prev.map(e => e._id === updatedExpense._id ? updatedExpense : e));
+        });
 
-    return () => {
-        socket.off('expenseAdded');
-        socket.off('expenseDeleted');
-        socket.off('expenseUpdated');
-    };
-}, [groupId]);
+        return () => {
+            socket.off('expenseAdded');
+            socket.off('expenseDeleted');
+            socket.off('expenseUpdated');
+        };
+    }, [groupId]);
 
     return (
         <>
-            <div>
+            <div className="add-expense-card">
+                <h3>Add an expense</h3>
+
                 <form onSubmit={handleSubmit}>
-                    <input value={description} type="text" placeholder="Description" onChange={(e) => setDescription(e.target.value)}></input>
-                    <input value={amount} type="number" placeholder="Amount" onChange={(e) => setAmount(e.target.value)} />
+                    <div className="form-row">
+                        <input value={description} type="text" placeholder="Description" onChange={(e) => setDescription(e.target.value)}></input>
+                        <input value={amount} type="number" placeholder="Amount" onChange={(e) => setAmount(e.target.value)} />
+                    </div>
 
-                    <select value={category} onChange={(e) => setCategory(e.target.value)}>
-                        <option value="food">Food</option>
-                        <option value="travel">Travel</option>
-                        <option value="accommodation">Accommodation</option>
-                        <option value="shopping">Shopping</option>
-                        <option value="utilities">Utilities</option>
-                        <option value="entertainment">Entertainment</option>
-                        <option value="other">Other</option>
-                    </select>
+                    <div className="form-row">
+                        <select value={category} onChange={(e) => setCategory(e.target.value)}>
+                            <option value="food">Food</option>
+                            <option value="travel">Travel</option>
+                            <option value="accommodation">Accommodation</option>
+                            <option value="shopping">Shopping</option>
+                            <option value="utilities">Utilities</option>
+                            <option value="entertainment">Entertainment</option>
+                            <option value="other">Other</option>
+                        </select>
 
-                    <select value={splitType} onChange={(e) => setSplitType(e.target.value)}> 
-                        <option value="equal">Equal</option>
-                        <option value="exact">Exact</option>
-                        <option value="percentage">Percentage</option>
-                    </select>
+                        <select value={splitType} onChange={(e) => setSplitType(e.target.value)}>
+                            <option value="equal">Equal</option>
+                            <option value="exact">Exact</option>
+                            <option value="percentage">Percentage</option>
+                        </select>
+                    </div>
 
-                    {groupMembers.map((m) => {
-                        const isSelected = participants.some(p => p.userId === m._id)
-                        return(
-                            <div key={m._id}>
-                                <label>
-                                    <input type="checkbox"
-                                        checked={isSelected}
-                                        onChange={() => {
-                                            if (participants.some(p => p.userId === m._id)) {
-                                                setParticipants(participants.filter(p => p.userId !== m._id))
-                                            } else {
-                                                setParticipants([...participants,{ userId :  m._id , amount : 0 , percentage : 0}])
-                                            }
-                                        }}
-                                    ></input>
-                                    {m.name}
-                                </label>
+                    <div className="participants-box">
+                        <p className="label">Split between</p>
 
-                                {isSelected && splitType === "exact" && (
-                                    <input
-                                        type="number"
-                                        placeholder="Amount"
-                                        value={participants.find(p => p.userId === m._id).amount}
-                                        onChange={(e) =>{
-                                            setParticipants(participants.map(p =>
-                                                p.userId === m._id ? {...p , amount : Number(e.target.value)} : p
-                                            ))
-                                        }}
-                                    ></input>
-                                )}
+                        {groupMembers.map((m) => {
+                            const isSelected = participants.some(p => p.userId === m._id)
+                            return (
+                                <div className="participant-row" key={m._id}>
+                                    <label>
+                                        <input type="checkbox"
+                                            checked={isSelected}
+                                            onChange={() => {
+                                                if (participants.some(p => p.userId === m._id)) {
+                                                    setParticipants(participants.filter(p => p.userId !== m._id))
+                                                } else {
+                                                    setParticipants([...participants, { userId: m._id, amount: 0, percentage: 0 }])
+                                                }
+                                            }}
+                                        ></input>
+                                        {m.name}
+                                    </label>
 
-                                {isSelected && splitType === "percentage" && (
-                                    <input
-                                        type="number"
-                                        placeholder="Percentage"
-                                        value={participants.find(p => p.userId === m._id).percentage}
-                                        onChange={(e) =>{
-                                            setParticipants(participants.map(p =>
-                                                p.userId === m._id ? {...p , percentage : Number(e.target.value)} : p
-                                            ))
-                                        }}
-                                    ></input>
-                                )}
-                            </div>
-                            
-                        )
-                    })}
-                    <button type="submit">Submit</button>
+                                    {isSelected && splitType === "exact" && (
+                                        <input
+                                            type="number"
+                                            placeholder="Amount"
+                                            value={participants.find(p => p.userId === m._id).amount}
+                                            onChange={(e) => {
+                                                setParticipants(participants.map(p =>
+                                                    p.userId === m._id ? { ...p, amount: Number(e.target.value) } : p
+                                                ))
+                                            }}
+                                        ></input>
+                                    )}
+
+                                    {isSelected && splitType === "percentage" && (
+                                        <input
+                                            type="number"
+                                            placeholder="Percentage"
+                                            value={participants.find(p => p.userId === m._id).percentage}
+                                            onChange={(e) => {
+                                                setParticipants(participants.map(p =>
+                                                    p.userId === m._id ? { ...p, percentage: Number(e.target.value) } : p
+                                                ))
+                                            }}
+                                        ></input>
+                                    )}
+                                </div>
+
+                            )
+                        })}
+                    </div>
+
+                    <button type="submit">Add expense</button>
                 </form>
             </div>
 
 
-            <div>
+            <div className="overview-section">
+                <h3>Expenses</h3>
                 {(expenses.length === 0) ?
-                    <p>No expenses added yet.</p> :
-                    expenses.map((e) => (
-                        <div key={e._id}>
-                            <p>Description : {e.description} </p>
-                            <p>Amount : {e.amount} </p>
-                            <p>Paid By : {e.paidBy.name}</p>
-                            <p>Split Type :{e.splitType} </p>
-                            <p>Category : {e.category} </p>
-                            <p></p>
-                        </div>
-                    ))}
+                    <div className="empty-state">No expenses added yet.</div> :
+                    <div className="expense-list">
+                        {expenses.map((e) => (
+                            <div className="expense-card" key={e._id}>
+                                <div className="expense-info">
+                                    <h4>{e.description}</h4>
+                                    <p>Paid by {e.paidBy.name} · {e.splitType} split </p>
+                                </div>
+                                <div className="expense-amount">
+                                    <div className="amount">₹{e.amount}</div>
+                                    <span className="category-tag">{e.setCategory} </span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                } 
             </div>
         </>
     )
