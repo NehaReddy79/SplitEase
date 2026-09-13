@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getExpenses, addExpense } from "../api/expenses";
+import { getExpenses, addExpense, exportExpensesCSV } from "../api/expenses";
 import { getGroupMembers } from "../api/groups";
 import { useParams } from "react-router-dom";
 import socket from '../socket'
@@ -42,6 +42,20 @@ export function ExpensesPage() {
 
         } catch (error) {
             alert(error.response?.data?.error || 'Something went wrong.')
+        }
+    }
+    async function handleExportCSV() {
+        try {
+            const res = await exportExpensesCSV(groupId)
+            const url = window.URL.createObjectURL(new Blob([res.data]))
+            const link = document.createElement('a')
+            link.href = url
+            link.setAttribute('download', 'expenses.csv')
+            document.body.appendChild(link)
+            link.click()
+            link.remove()
+        } catch (error) {
+            alert('Failed to export CSV')
         }
     }
 
@@ -169,7 +183,10 @@ export function ExpensesPage() {
 
 
             <div className="overview-section">
-                <h3>Expenses</h3>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <h3>Expenses</h3>
+                    <button onClick={handleExportCSV}>Export CSV</button>
+                </div>
                 {(expenses.length === 0) ?
                     <div className="empty-state">No expenses added yet.</div> :
                     <div className="expense-list">
@@ -186,7 +203,7 @@ export function ExpensesPage() {
                             </div>
                         ))}
                     </div>
-                } 
+                }
             </div>
         </>
     )

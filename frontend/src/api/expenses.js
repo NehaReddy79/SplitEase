@@ -15,3 +15,7 @@ export const getBalances = (groupId) =>{
 export const getSettlements = (groupId) =>{
     return api.get(`/expenses/${groupId}/settlements`)
 }
+
+export const exportExpensesCSV = (groupId) => {
+    return api.get(`/expenses/${groupId}/export/csv`, { responseType: 'blob' })
+}
