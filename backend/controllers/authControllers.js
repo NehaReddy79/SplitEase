@@ -39,7 +39,7 @@ async function login(req, res) {
                     { expiresIn: '7d' }
                 )
 
-                res.status(200).json({ token, userId: userRes._id })
+                res.status(200).json({ token, userId: userRes._id , name : userRes.name })
             } else {
                 res.status(400).json({ error: "Invalid credentials" })
             }

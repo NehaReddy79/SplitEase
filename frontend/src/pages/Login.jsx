@@ -15,6 +15,7 @@ export function Login() {
             const res = await login(email, password)
             localStorage.setItem('token', res.data.token)
             localStorage.setItem('userId', res.data.userId)
+            localStorage.setItem('name' , res.data.name)
             alert('Login successful!')
             navigate('/dashboard')
 

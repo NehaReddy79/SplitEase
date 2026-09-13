@@ -35,3 +35,8 @@
   color: #fb923c;
   border-color: #fecaca;
 }
+.navbar-username {
+  font-size: 0.9rem;
+  color: #57534e;
+  font-weight: 500;
+}

@@ -4,6 +4,7 @@ import './Navbar.css';
 export function Navbar() {
     const navigate = useNavigate();
     const isLoggedIn = !!localStorage.getItem('token');
+    const name = localStorage.getItem('name')
 
     function handleLogout() {
         localStorage.removeItem('token');
@@ -17,7 +18,13 @@ export function Navbar() {
                 <span>SplitEase</span>
             </Link>
             {isLoggedIn && (
-                <button onClick={handleLogout} className="logout-btn">Logout</button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+
+                    <span className="navbar-username">Hi, {name}</span>
+                    <button onClick={() => navigate('/dashboard')}>Dashboard</button>
+                    <button onClick={handleLogout} className="logout-btn">Logout</button>
+
+                </div>
             )}
         </nav>
     );
