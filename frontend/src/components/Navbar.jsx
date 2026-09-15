@@ -14,7 +14,7 @@ export function Navbar() {
 
     return (
         <nav className="app-navbar">
-            <Link to={isLoggedIn ? "/dashboard" : "/login"} className="navbar-logo">
+            <Link to={isLoggedIn ? "/" : "/login"} className="navbar-logo">
                 <span>SplitEase</span>
             </Link>
             {isLoggedIn && (

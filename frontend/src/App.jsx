@@ -8,6 +8,7 @@ import { ExpensesPage } from './pages/ExpensesPage';
 import { BalancesPage } from './pages/BalancesPage';
 import { SettlementsPage } from './pages/SettlementPage';
 import { Navbar } from "./components/Navbar";
+import { Hero } from "./pages/Hero";
 
 function App() {
 
@@ -16,6 +17,7 @@ function App() {
     <BrowserRouter>
       <Navbar />
       <Routes>
+        <Route path="/" element={<Hero />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
