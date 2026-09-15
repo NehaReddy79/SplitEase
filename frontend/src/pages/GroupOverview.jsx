@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
-import { getGroupMembers, addMember } from "../api/groups";
-import { useParams } from "react-router-dom";
+import { getGroupMembers, addMember , leaveGroup} from "../api/groups";
+import { useNavigate, useParams } from "react-router-dom";
 import './GroupOverview.css'
 
 export function GroupOverview() {
     const { groupId } = useParams()
     const [groupMembers, setGroupMembers] = useState([])
     const [newMemberEmail, setNewMemberEmail] = useState('')
-
+    const navigate = useNavigate()
 
     useEffect(() => {
 
@@ -33,6 +33,16 @@ export function GroupOverview() {
         }
     }
 
+    async function handleLeaveGroup(){
+        if(!window.confirm("Are you sure you want to leave this group")) return
+        try{
+            await leaveGroup(groupId)
+            alert("You've left the group")
+            navigate('/dashboard')
+        }catch(error){
+            alert(error.response?.data?.error || "Something went wrong")
+        }
+    }
     return (
         <>
 
@@ -64,6 +74,8 @@ export function GroupOverview() {
                     </div>
                 }
             </div>
+
+            <button onClick={handleLeaveGroup} className="danger-btn">Leave group</button>
 
         </>
     )

@@ -97,3 +97,16 @@
   border-radius: var(--radius-lg);
   border: 1px dashed #e7e0d8;
 }
+
+.danger-btn {
+  background: white;
+  color: #dc2626;
+  border: 1.5px solid #fecaca;
+  font-weight: 600;
+  margin-top: var(--space-6);
+}
+
+.danger-btn:hover {
+  background: #fef2f2;
+  border-color: #fca5a5;
+}

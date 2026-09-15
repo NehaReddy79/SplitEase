@@ -15,3 +15,7 @@ export const addMember = (groupId , email) =>{
 export const getGroupMembers = (groupId) =>{
     return api.get(`/groups/${groupId}/members`)
 }
+
+export const leaveGroup = (groupId) => {
+    return api.delete(`/groups/${groupId}/leave`)
+}
