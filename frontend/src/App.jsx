@@ -9,6 +9,7 @@ import { BalancesPage } from './pages/BalancesPage';
 import { SettlementsPage } from './pages/SettlementPage';
 import { Navbar } from "./components/Navbar";
 import { Hero } from "./pages/Hero";
+import { AnalyticsPage } from "./pages/AnalyticsPage";
 
 function App() {
 
@@ -26,6 +27,7 @@ function App() {
           <Route path="expenses" element={<ExpensesPage />} />
           <Route path="balances" element={<BalancesPage />} />
           <Route path="settlements" element={<SettlementsPage />} />
+          <Route path="analytics" element={<AnalyticsPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

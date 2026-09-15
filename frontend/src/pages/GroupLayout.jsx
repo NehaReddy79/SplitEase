@@ -6,15 +6,18 @@ export function GroupLayout() {
 
     return (
         <div className='group-page'>
-            
+
             <div className='group-content'>
                 <div className='group-tabs'>
-                        <NavLink to={`/groups/${groupId}`} end className={({isActive}) => isActive ? 'active' : ''}>
-                            Overview
-                        </NavLink>
-                        <NavLink to={`/groups/${groupId}/expenses`} end className={({isActive}) => isActive ? 'active' : ''}>Expenses</NavLink>
-                        <NavLink to={`/groups/${groupId}/balances`} end className={({isActive}) => isActive ? 'active' : ''}>Balances</NavLink> 
-                        <NavLink to={`/groups/${groupId}/settlements`} end className={({isActive}) => isActive ? 'active' : ''}>Settlements</NavLink> 
+                    <NavLink to={`/groups/${groupId}`} end className={({ isActive }) => isActive ? 'active' : ''}>
+                        Overview
+                    </NavLink>
+                    <NavLink to={`/groups/${groupId}/expenses`} end className={({ isActive }) => isActive ? 'active' : ''}>Expenses</NavLink>
+                    <NavLink to={`/groups/${groupId}/balances`} end className={({ isActive }) => isActive ? 'active' : ''}>Balances</NavLink>
+                    <NavLink to={`/groups/${groupId}/settlements`} end className={({ isActive }) => isActive ? 'active' : ''}>Settlements</NavLink>
+                    <NavLink to={`/groups/${groupId}/analytics`} className={({ isActive }) => isActive ? 'active' : ''}>
+                        Analytics
+                    </NavLink>
                 </div>
                 <Outlet />
             </div>
