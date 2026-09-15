@@ -1,5 +1,6 @@
 const Group = require('../models/Group')
-const User = require('../models/User')
+const User = require('../models/User');
+const { calculateBalances } = require('./expenseController');
 
 async function createGroup(req, res) {
     try {
@@ -23,7 +24,7 @@ async function addMember(req, res) {
     try {
         const { groupId } = req.params
         const { email } = req.body
-        const user = await User.findOne({email})
+        const user = await User.findOne({ email })
         const groupRes = await Group.findById(groupId)
 
         if (!user) {
@@ -82,4 +83,33 @@ async function getGroupMembers(req, res) {
 
 }
 
-module.exports = { createGroup, addMember, getMyGroups, getGroupMembers };
+async function leaveGroup(req , res) {
+    try {
+
+
+        const { groupId } = req.params
+        const userId = req.userId
+
+        let balances = await calculateBalances(groupId)
+        const userBalance = balances[userId] || 0
+        if (Math.abs(userBalance) > 0.01) {
+            return res.status(400).json({ error: "You must settle your balances before leaving the group" })
+        }
+
+        const group = await Group.findById(groupId)
+        if (!group) {
+            return res.status(404).json({ error: "Group doesn't exist" })
+        }
+
+        group.members = group.members.filter(m => m.toString() !== userId)
+        await group.save()
+
+        res.status(200).json({ message: "Left the group successfully" })
+    }catch(error){
+
+        console.error(error.message)
+        res.status(500).json({ error: "Something went wrong" })
+    }
+}
+
+module.exports = { createGroup, addMember, getMyGroups, getGroupMembers , leaveGroup };
