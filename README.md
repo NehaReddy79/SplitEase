@@ -7,7 +7,7 @@ A full-stack expense-splitting app that calculates simplified group settlements 
 ---
 
 
-## What makes this different
+## Notable Features
 
 - **Two-sided settlement verification** — a payment only updates balances after the *recipient* confirms it, with support for partial payments validated against live balances
 - **Real-time sync** — expense and settlement changes push instantly to everyone viewing a group via Socket.io
